@@ -1,1 +1,1 @@
-docker build -t training_service .
+docker build -t dicebox.trainingservice .
