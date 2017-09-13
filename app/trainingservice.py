@@ -1,26 +1,15 @@
 #!flask/bin/python
-#from lib import dicebox_config as config
+
 import lib.docker_config as config
-from lib import sensory_interface
 from flask import Flask, jsonify, request, make_response, abort
 from flask_cors import CORS, cross_origin
-import base64
 import logging
-import json
-from datetime import datetime
-import os
-import errno
 import uuid
-import numpy
 import pika
-#import logging
-#import lib.dicebox_config as config
-from lib.network import Network
-#from datetime import datetime
 import json
 
 
-# Setup logging.
+# Set up logging.
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%m/%d/%Y %I:%M:%S %p',
