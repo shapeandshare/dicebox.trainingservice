@@ -1,5 +1,6 @@
 #!flask/bin/python
-from lib import dicebox_config as config
+#from lib import dicebox_config as config
+import lib.dicebox_config as config
 from lib import sensory_interface
 from flask import Flask, jsonify, request, make_response, abort
 from flask_cors import CORS, cross_origin
@@ -25,7 +26,7 @@ logging.basicConfig(
     datefmt='%m/%d/%Y %I:%M:%S %p',
     level=logging.DEBUG,
     filemode='w',
-    filename="%s/training_service.log" % config.LOGS_DIR
+    filename="%s/trainingservice.log" % config.LOGS_DIR
 )
 
 
@@ -65,7 +66,6 @@ def train_request():
     return training_request_id
 
 
-# for small batches..
 @app.route('/api/train/request', methods=['POST'])
 def make_api_train_request_public():
     if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
