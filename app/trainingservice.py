@@ -1,6 +1,6 @@
 #!flask/bin/python
 #from lib import dicebox_config as config
-import lib.dicebox_config as config
+import lib.docker_config as config
 from lib import sensory_interface
 from flask import Flask, jsonify, request, make_response, abort
 from flask_cors import CORS, cross_origin
