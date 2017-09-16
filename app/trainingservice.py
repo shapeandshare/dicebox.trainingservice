@@ -7,17 +7,28 @@ import logging
 import uuid
 import pika
 import json
+import os
+import errno
+
+# https://stackoverflow.com/questions/273192/how-can-i-create-a-directory-if-it-does-not-exist
+def make_sure_path_exists(path):
+    try:
+        if os.path.exists(path) is False:
+            os.makedirs(path)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
 
 
-# Set up logging.
+# Setup logging.
+make_sure_path_exists(config.LOGS_DIR)
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%m/%d/%Y %I:%M:%S %p',
     level=logging.DEBUG,
     filemode='w',
-    filename="%s/trainingservice.log" % config.LOGS_DIR
+    filename="%s/%s.trainingservice.log" % (config.LOGS_DIR, os.uname()[1])
 )
-
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:*"}})
