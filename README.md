@@ -1,39 +1,10 @@
-# dicebox
-               Let's shake things up!
+Training Service
+===============
+
+The training service is a REST API used to request training.
 
 Overview
 --------
-An image classification and training system built with SOA (Service-Oriented Architecture) in mind.  The project includes several client implementations, and future enhancements will continue to expand the API capabilities.
-
-1. **Visual Image Classification**
-
-    Dicebox is a visual classification system.  It can be reconfigured for different image sizes and categories.
-
-2. **Evolutionary Neural Network**
-
-    Dicebox is capable of being applied to a large variety of classification problems.  Sometimes unique or novel problems need to be solved and a neural network structure is unknown.  In this case dicebox provides a means to evolve a network tailored to the particular problem.
-
-3. **Service-Oriented Architecture**
-   
-*   The trained neural network is accessed through a REST API.  
-*   The Web Client (and supervised trainer) stores data to an AWS EFS via the REST API.
-*   The Trainer uses the REST API for training data
-
-
-
-High Level Components
----------------------
-
-![Dicebox Services Diagram](https://github.com/shapeandshare/dicebox/raw/master/assets/Dicebox%20Services%20Diagram.090217.png)
-
-* **Training Service**
-
-    The training service is a REST API used to request training.
-
-
-
-Training Service
-===============
 
 **Start the service (development only):**
 ```
@@ -68,7 +39,7 @@ docker service update --image shapeandshare/dicebox.trainingservice:latest train
 ```
 
 In the examples above the Docker Swarm was deployed to AWS and had the Cloudstor:aws plugin enabled and active.
-The sensory service containers will store and read data from the shared storage.
+The training service containers will store and read data from the shared storage.
 
 **Global shared Cloudstor volumes mounted by all tasks in a swarm service.**
 
