@@ -1,7 +1,7 @@
 Training Service
 ===============
 
-The training service is a REST API used to request training.
+The training service is a REST API used to request training asynchronously.
 
 Overview
 --------
