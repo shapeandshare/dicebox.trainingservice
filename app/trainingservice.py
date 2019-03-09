@@ -92,7 +92,7 @@ def train_request():
 ###############################################################################
 # Accepts requests for async training sessions
 ###############################################################################
-@app.route('/api/train/request', methods=['POST'])
+@app.route('/api/train/request', methods=['GET'])
 def make_api_train_request_public():
     if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
         logging.debug('bad access key')
