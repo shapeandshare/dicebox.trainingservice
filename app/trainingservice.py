@@ -1,5 +1,15 @@
 #!flask/bin/python
+###############################################################################
+# Training Service
+#   Handles requests for training sessions
+#
+# Copyright (c) 2017-2019 Joshua Burt
+###############################################################################
 
+
+###############################################################################
+# Dependencies
+###############################################################################
 import lib.docker_config as config
 from flask import Flask, jsonify, request, make_response, abort
 from flask_cors import CORS, cross_origin
@@ -10,7 +20,11 @@ import json
 import os
 import errno
 
+
+###############################################################################
+# Allows for easy directory structure creation
 # https://stackoverflow.com/questions/273192/how-can-i-create-a-directory-if-it-does-not-exist
+###############################################################################
 def make_sure_path_exists(path):
     try:
         if os.path.exists(path) is False:
@@ -20,7 +34,9 @@ def make_sure_path_exists(path):
             raise
 
 
+###############################################################################
 # Setup logging.
+###############################################################################
 make_sure_path_exists(config.LOGS_DIR)
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -30,10 +46,17 @@ logging.basicConfig(
     filename="%s/%s.trainingservice.log" % (config.LOGS_DIR, os.uname()[1])
 )
 
+
+###############################################################################
+# Create the flask, and cors config
+###############################################################################
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:*"}})
 
 
+###############################################################################
+# Handles submission of the actual training request to the message system
+###############################################################################
 def train_request():
     training_request_id = uuid.uuid4()
 
@@ -66,35 +89,49 @@ def train_request():
     return training_request_id
 
 
+###############################################################################
+# Accepts requests for async training sessions
+###############################################################################
 @app.route('/api/train/request', methods=['POST'])
 def make_api_train_request_public():
     if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
         logging.debug('bad access key')
-        abort(401)
+        abort(403)
     if request.headers['API-VERSION'] != config.API_VERSION:
         logging.debug('bad access version')
         abort(400)
     training_request_id = train_request()
-    return make_response(jsonify({'training_request_id': training_request_id}), 201)
+    return make_response(jsonify({'training_request_id': training_request_id}), 202)
 
 
-
+###############################################################################
+# Returns API version
+###############################################################################
 @app.route('/api/version', methods=['GET'])
 def make_api_version_public():
     return make_response(jsonify({'version':  str(config.API_VERSION)}), 201)
 
 
+###############################################################################
+# Super generic health end-point
+###############################################################################
 @app.route('/health/plain', methods=['GET'])
 @cross_origin()
 def make_health_plain_public():
     return make_response('true', 201)
 
 
+###############################################################################
+# 404 Handler
+###############################################################################
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
+###############################################################################
+# main entry point, thread safe
+###############################################################################
 if __name__ == '__main__':
     logging.debug('starting flask app')
     app.run(debug=config.FLASK_DEBUG, host=config.LISTENING_HOST, threaded=True)
