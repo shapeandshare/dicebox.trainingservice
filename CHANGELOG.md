@@ -13,3 +13,7 @@ Change Log
 * Updated 401 to 403 for auth failure
 * Response for async request now uses 202 created, instead of 201.
 * Route for /api/train/request is now a GET.
+
+03.21.2019
+----------
+* Updated core libraries.
