@@ -10,7 +10,6 @@
 ###############################################################################
 # Dependencies
 ###############################################################################
-import lib.docker_config as config
 from flask import Flask, jsonify, request, make_response, abort
 from flask_cors import CORS, cross_origin
 import logging
@@ -19,6 +18,11 @@ import pika
 import json
 import os
 import errno
+import dicebox.docker_config
+
+# Config
+config_file='./dicebox.config'
+CONFIG = dicebox.docker_config.DockerConfig(config_file)
 
 
 ###############################################################################
@@ -37,13 +41,13 @@ def make_sure_path_exists(path):
 ###############################################################################
 # Setup logging.
 ###############################################################################
-make_sure_path_exists(config.LOGS_DIR)
+make_sure_path_exists(CONFIG.LOGS_DIR)
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%m/%d/%Y %I:%M:%S %p',
     level=logging.DEBUG,
     filemode='w',
-    filename="%s/%s.trainingservice.log" % (config.LOGS_DIR, os.uname()[1])
+    filename="%s/trainingservice.%s.log" % (CONFIG.LOGS_DIR, os.uname()[1])
 )
 
 
@@ -62,29 +66,30 @@ def train_request():
 
     try:
         ## Submit our message
-        url = config.TRAINING_SERVICE_RABBITMQ_URL
+        url = CONFIG.TRAINING_SERVICE_RABBITMQ_URL
         logging.debug(url)
         parameters = pika.URLParameters(url)
         connection = pika.BlockingConnection(parameters=parameters)
 
         channel = connection.channel()
 
-        channel.queue_declare(queue=config.TRAINING_SERVICE_RABBITMQ_TRAIN_REQUEST_TASK_QUEUE, durable=True)
+        channel.queue_declare(queue=CONFIG.TRAINING_SERVICE_RABBITMQ_TRAIN_REQUEST_TASK_QUEUE, durable=True)
 
         training_request = {}
         training_request['training_request_id'] = str(training_request_id)
-        channel.basic_publish(exchange=config.TRAINING_SERVICE_RABBITMQ_EXCHANGE,
-                              routing_key=config.TRAINING_SERVICE_RABBITMQ_TRAINING_REQUEST_ROUTING_KEY,
+        channel.basic_publish(exchange=CONFIG.TRAINING_SERVICE_RABBITMQ_EXCHANGE,
+                              routing_key=CONFIG.TRAINING_SERVICE_RABBITMQ_TRAINING_REQUEST_ROUTING_KEY,
                               body=json.dumps(training_request),
                               properties=pika.BasicProperties(
                                   delivery_mode=2,  # make message persistent
                               ))
         logging.debug(" [x] Sent %r" % json.dumps(training_request))
-        connection.close()
     except:
         # something went wrong..
+        training_request_id = None
         logging.error('we had a failure sending the request to the message system')
-        return None
+    finally:
+        connection.close()
 
     return training_request_id
 
@@ -94,10 +99,10 @@ def train_request():
 ###############################################################################
 @app.route('/api/train/request', methods=['GET'])
 def make_api_train_request_public():
-    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+    if request.headers['API-ACCESS-KEY'] != CONFIG.API_ACCESS_KEY:
         logging.debug('bad access key')
         abort(403)
-    if request.headers['API-VERSION'] != config.API_VERSION:
+    if request.headers['API-VERSION'] != CONFIG.API_VERSION:
         logging.debug('bad access version')
         abort(400)
     training_request_id = train_request()
@@ -109,7 +114,7 @@ def make_api_train_request_public():
 ###############################################################################
 @app.route('/api/version', methods=['GET'])
 def make_api_version_public():
-    return make_response(jsonify({'version':  str(config.API_VERSION)}), 201)
+    return make_response(jsonify({'version':  str(CONFIG.API_VERSION)}), 200)
 
 
 ###############################################################################
@@ -118,7 +123,7 @@ def make_api_version_public():
 @app.route('/health/plain', methods=['GET'])
 @cross_origin()
 def make_health_plain_public():
-    return make_response('true', 201)
+    return make_response('true', 200)
 
 
 ###############################################################################
@@ -134,4 +139,4 @@ def not_found(error):
 ###############################################################################
 if __name__ == '__main__':
     logging.debug('starting flask app')
-    app.run(debug=config.FLASK_DEBUG, host=config.LISTENING_HOST, threaded=True)
+    app.run(debug=CONFIG.FLASK_DEBUG, host=CONFIG.LISTENING_HOST, threaded=True)
