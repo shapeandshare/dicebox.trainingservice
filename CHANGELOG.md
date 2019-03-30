@@ -21,3 +21,10 @@ Change Log
 03.23.2019
 ----------
 * Updated core libraries.
+
+03.30.2019
+----------
+* Updated core libraries.
+* Refactored to support latest library changes
+* Updated docker build to account for new directory structure.
+
