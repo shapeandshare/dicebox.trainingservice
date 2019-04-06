@@ -18,11 +18,11 @@ import pika
 import json
 import os
 import errno
-import dicebox.docker_config
+from dicebox.config.dicebox_config import DiceboxConfig
 
 # Config
 config_file='./dicebox.config'
-CONFIG = dicebox.docker_config.DockerConfig(config_file)
+CONFIG = DiceboxConfig(config_file)
 
 
 ###############################################################################
